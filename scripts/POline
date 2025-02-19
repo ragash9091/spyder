@@ -1,0 +1,67 @@
+import csv
+import requests
+import json
+from csv import writer
+
+payload={}
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'Bearer eyJ0eXAiOiJhdCtKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjRmOjMzOmI3OmY3OjVmOjg4OjQ3OmRhOjAzOmVmOjkzOjQ1OmU5OmNjOmZiOjg3In0.eyJpc3MiOiJodHRwczovL2RpYWdlby5jb3VwYWhvc3QuY29tIiwiaWF0IjoxNzA4MDY3MDY2LCJleHAiOjE3MDgxNTM0NjYsInN1YiI6IjJjYTg2NGM5ZWU3YWNiODU4YmU3ODE5ZTA2NDBjNmEyIiwianRpIjoiZmU2YzViZjUtYmNmZS00YzdjLWExMGMtZDllZjBjZmVjODJhIiwiY2xpZW50X2lkIjoiMmNhODY0YzllZTdhY2I4NThiZTc4MTllMDY0MGM2YTIiLCJzY29wZSI6ImNvcmUuYWNjb3VudGluZy5yZWFkIGNvcmUuYXBwcm92YWwucmVhZCBjb3JlLmFwcHJvdmFsLndyaXRlIGNvcmUuY2F0YWxvZy5yZWFkIGNvcmUuY2F0YWxvZy53cml0ZSBjb3JlLmNvbW1lbnQucmVhZCBjb3JlLmNvbW1lbnQud3JpdGUgY29yZS5jb21tb24ucmVhZCBjb3JlLmNvbW1vbi53cml0ZSBjb3JlLmNvbnRyYWN0LnJlYWQgY29yZS5lYXN5X2Zvcm1fcmVzcG9uc2UuYXBwcm92YWwud3JpdGUgY29yZS5lYXN5X2Zvcm1fcmVzcG9uc2UucmVhZCBjb3JlLmVhc3lfZm9ybV9yZXNwb25zZS53cml0ZSBjb3JlLmVhc3lfZm9ybS5yZWFkIGNvcmUuZWFzeV9mb3JtLndyaXRlIGNvcmUuZ2xvYmFsX25hdmlnYXRpb24ucmVhZCBjb3JlLmludGVncmF0aW9uLnJlYWQgY29yZS5pbnRlZ3JhdGlvbi53cml0ZSBjb3JlLmludmVudG9yeS5hZGp1c3RtZW50LnJlYWQgY29yZS5pbnZlbnRvcnkuYWRqdXN0bWVudC53cml0ZSBjb3JlLmludmVudG9yeS5iYWxhbmNlLnJlYWQgY29yZS5pbnZlbnRvcnkuY29tbW9uLnJlYWQgY29yZS5pbnZlbnRvcnkuY29tbW9uLndyaXRlIGNvcmUuaW52ZW50b3J5LmNvbnN1bXB0aW9uLnJlYWQgY29yZS5pbnZlbnRvcnkuY29uc3VtcHRpb24ud3JpdGUgY29yZS5pbnZlbnRvcnkuY3ljbGVfY291bnRzLnJlYWQgY29yZS5pbnZlbnRvcnkuY3ljbGVfY291bnRzLndyaXRlIGNvcmUuaW52ZW50b3J5LnBpY2tfbGlzdC5yZWFkIGNvcmUuaW52ZW50b3J5LnBpY2tfbGlzdC53cml0ZSBjb3JlLmludmVudG9yeS5yZWNlaXZpbmcucmVhZCBjb3JlLmludmVudG9yeS5yZWNlaXZpbmcud3JpdGUgY29yZS5pbnZlbnRvcnkucmV0dXJuX3RvX3N1cHBsaWVyLnJlYWQgY29yZS5pbnZlbnRvcnkucmV0dXJuX3RvX3N1cHBsaWVyLndyaXRlIGNvcmUuaW52ZW50b3J5LnRyYW5zYWN0aW9uLnJlYWQgY29yZS5pbnZlbnRvcnkudHJhbnNmZXIucmVhZCBjb3JlLmludmVudG9yeS50cmFuc2Zlci53cml0ZSBjb3JlLmludm9pY2UuYXBwcm92YWwuYnlwYXNzIGNvcmUuaW52b2ljZS5hcHByb3ZhbC53cml0ZSBjb3JlLmludm9pY2UuY3JlYXRlIGNvcmUuaW52b2ljZS5kZWxldGUgY29yZS5pbnZvaWNlLnJlYWQgY29yZS5pbnZvaWNlLndyaXRlIGNvcmUuaXRlbS5yZWFkIGNvcmUuaXRlbS53cml0ZSBjb3JlLmxlZ2FsX2VudGl0eS5yZWFkIGNvcmUubm90aWZpY2F0aW9uc19zdW1tYXJ5LnJlYWQgY29yZS5ub3RpZmljYXRpb25zX3N1bW1hcnkud3JpdGUgY29yZS5vYmplY3RfdHJhbnNsYXRpb25zLnJlYWQgY29yZS5vYmplY3RfdHJhbnNsYXRpb25zLndyaXRlIGNvcmUucGF5YWJsZXMuaW52b2ljZS5yZWFkIGNvcmUucGF5YWJsZXMuaW52b2ljZS53cml0ZSBjb3JlLnBheWFibGVzLm9yZGVyLnJlYWQgY29yZS5wYXlhYmxlcy5vcmRlci53cml0ZSBjb3JlLnByb2plY3QucmVhZCBjb3JlLnB1cmNoYXNlX29yZGVyLnJlYWQgY29yZS5wdXJjaGFzZV9vcmRlci53cml0ZSBjb3JlLnJlcXVpc2l0aW9uLnJlYWQgY29yZS5yZXF1aXNpdGlvbi53cml0ZSBjb3JlLnJldmlzaW9uX3JlY29yZC5yZWFkIGNvcmUuc291cmNpbmcucGVuZGluZ19zdXBwbGllci5yZWFkIGNvcmUuc291cmNpbmcucGVuZGluZ19zdXBwbGllci53cml0ZSBjb3JlLnN1cHBsaWVyX2luZm9ybWF0aW9uX3NpdGVzLnJlYWQgY29yZS5zdXBwbGllcl9pbmZvcm1hdGlvbl9zaXRlcy53cml0ZSBjb3JlLnN1cHBsaWVyX2luZm9ybWF0aW9uX3RheF9yZWdpc3RyYXRpb25zLnJlYWQgY29yZS5zdXBwbGllcl9pbmZvcm1hdGlvbl90YXhfcmVnaXN0cmF0aW9ucy53cml0ZSBjb3JlLnN1cHBsaWVyX3NpdGVzLnJlYWQgY29yZS5zdXBwbGllcl9zaXRlcy53cml0ZSBjb3JlLnN1cHBsaWVyLnJlYWQgY29yZS5zdXBwbGllci5yaXNrX2F3YXJlLnJlYWQgY29yZS5zdXBwbGllci5yaXNrX2F3YXJlLndyaXRlIGNvcmUuc3VwcGxpZXIud3JpdGUgY29yZS51b20ucmVhZCBjb3JlLnVzZXJfZ3JvdXAucmVhZCBjb3JlLnVzZXJfZ3JvdXAud3JpdGUgY29yZS51c2VyLnJlYWQgY29yZS51c2VyLndyaXRlIGVtYWlsIGxvZ2luIG9mZmxpbmVfYWNjZXNzIiwiYXVkIjpbImNvcmUiXX0.ZVyC_LsEVsiRII6NpiDW1AdLwt8iQjqqMOfh-MH_8wd_G2fwNblsfr6Dj4vUzTX2fgJCS73FylTi4FAiaHy9veP_FaKdq5xm8kNBhhaOdLc_Ks9xwWLVUyYNFz4lFfvGJWf0EeklY9Zg2feI4DXyPuCxDJaYbmw5lOhqpylhkd4MSXkM9yuHOzKpSxStSp8xRQEovCos4TzfnRyGxJQ3ZadvtSJciIRJ_r602qmPZJtFJXoBG2ZAiqY95qN4NMDFMJwC5ry25UNC-rT20FDwSIVwlh3N1aWHRNxIa-pEZuCpa9Zv5LWoDLXbnNcPMxrq-NhuqI0zAuHpcvyX4iUlMA',
+}
+
+with open('POSmoketestupdate.csv', 'r') as po_list:
+    csv_reader = csv.reader(po_list)
+    next(csv_reader)
+    
+    for line in csv_reader:
+        print(type(line[0]))
+        ponum = line[0]
+        linenum = line[1]
+        print(linenum)
+        url = "https://diageo.coupahost.com/api/purchase_orders?filter=Pofilter&po-number="+ponum
+        
+        response = requests.request("GET", url, headers=headers, data=payload)
+        print(response)
+        datalist = json.loads(response.text)
+#        print(linenum)
+        data = datalist[0]
+#        print('header data :')
+ #       print(data['id'], data['ship-to-attention'])
+        PONumber = data['po-number']
+        POID = data['id']
+        print(POID)
+        print(PONumber)
+              
+        
+
+        for line in data['order-lines']:
+#            print(line['line-num'], line['description'], line['total'], line['account']['code'], line['account']['segment-2'])
+            
+            Line_Number=line['line-num']
+            print(Line_Number)
+            if(Line_Number==linenum):
+                print(Line_Number)              
+            
+                Line_id=line['id']
+                print(Line_id)
+                #Need_By_Date2=line['need-by-date']
+                line_data = [PONumber,Line_Number, POID, Line_id]
+                print(line_data)
+                            
+                with open('updatev15cfeb.csv', 'a', newline='', encoding='utf-8') as f_object:  
+                    # Pass the CSV  file object to the writer() function
+                    writer_object = writer(f_object)
+                    # Result - a writer object
+                    # Pass the data in the list as an argument into the writerow() function
+                    writer_object.writerow(line_data)  
+                    # Close the file object
+                    f_object.close()
+
+
+            
+            
+
+
+
+
